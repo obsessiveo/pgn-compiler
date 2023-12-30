@@ -2,10 +2,20 @@ import { TagNames } from '../types-consts/consts';
 import { Parser, ParserResult } from '../types-consts/types';
 
 export function characterParser(c: string): Parser<string> {
-  const f = (input: string): ParserResult<string> => {
+  const f = (input: string, position = 0): ParserResult<string> => {
     return input.startsWith(c)
-      ? { success: true, value: c, rest: input.slice(c.length) }
-      : { success: false, rest: input };
+      ? {
+          success: true,
+          value: c,
+          rest: input.slice(c.length),
+          position: position + c.length,
+        }
+      : {
+          success: false,
+          rest: input,
+          position: position,
+          error: `Expected ${c}`,
+        };
   };
   return f;
 }
@@ -16,7 +26,7 @@ export function characterParser(c: string): Parser<string> {
  * @returns zero or more whitespace characters
  */
 export function whitespaceParser(): Parser<string> {
-  const f = (input: string): ParserResult<string> => {
+  const f = (input: string, position = 0): ParserResult<string> => {
     const whiteSpace = /^[ \n\t]*/;
     const match = whiteSpace.exec(input);
     if (match) {
@@ -24,9 +34,16 @@ export function whitespaceParser(): Parser<string> {
         success: true,
         value: match[0],
         rest: input.slice(match[0].length),
+        position: position + match[0].length,
       };
     } else {
-      return { success: false, rest: input };
+      // should never happen
+      return {
+        success: false,
+        rest: input,
+        position: position,
+        error: 'Expected whitespace',
+      };
     }
   };
 
@@ -34,16 +51,22 @@ export function whitespaceParser(): Parser<string> {
 }
 
 export function regexParser(regex: RegExp): Parser<string> {
-  const f = (input: string): ParserResult<string> => {
+  const f = (input: string, position = 0): ParserResult<string> => {
     const match = regex.exec(input);
     if (match) {
       return {
         success: true,
         value: match[0],
         rest: input.slice(match[0].length),
+        position: position + match[0].length,
       };
     } else {
-      return { success: false, rest: input };
+      return {
+        success: false,
+        rest: input,
+        position: position,
+        error: `Expected regex: ${regex}`,
+      };
     }
   };
 
@@ -51,7 +74,7 @@ export function regexParser(regex: RegExp): Parser<string> {
 }
 
 export function stringParser(): Parser<string> {
-  const f = (input: string): ParserResult<string> => {
+  const f = (input: string, position = 0): ParserResult<string> => {
     const regex = /^"(.*)"/;
     const match = regex.exec(input);
     if (match) {
@@ -59,9 +82,15 @@ export function stringParser(): Parser<string> {
         success: true,
         value: match[1],
         rest: input.slice(match[0].length),
+        position: position + match[0].length,
       };
     } else {
-      return { success: false, rest: input };
+      return {
+        success: false,
+        rest: input,
+        position: position,
+        error: 'Expected a string',
+      };
     }
   };
 
@@ -69,7 +98,7 @@ export function stringParser(): Parser<string> {
 }
 
 export function endofLineParser(): Parser<string> {
-  const f = (input: string): ParserResult<string> => {
+  const f = (input: string, position = 0): ParserResult<string> => {
     const regex = /^(\r\n|\n)/;
     const match = regex.exec(input);
     if (match) {
@@ -77,9 +106,15 @@ export function endofLineParser(): Parser<string> {
         success: true,
         value: match[0],
         rest: input.slice(match[0].length),
+        position: position + match[0].length,
       };
     } else {
-      return { success: false, rest: input };
+      return {
+        success: false,
+        rest: input,
+        position: position,
+        error: 'Expected end of line',
+      };
     }
   };
 
@@ -87,7 +122,7 @@ export function endofLineParser(): Parser<string> {
 }
 
 export function tagNameParser(): Parser<string> {
-  const f = (input: string): ParserResult<string> => {
+  const f = (input: string, position = 0): ParserResult<string> => {
     // tag names are composed exclusively of letters, digits, and the underscore character
     // starts with a capital letter
     const regex = /^[A-Z][a-zA-Z0-9_]+/;
@@ -102,10 +137,20 @@ export function tagNameParser(): Parser<string> {
           rest: input.slice(match[0].length),
         };
       } else {
-        return { success: false, rest: input };
+        return {
+          success: false,
+          rest: input,
+          position: position,
+          error: `Uknown tag name: ${tagName}`,
+        };
       }
     } else {
-      return { success: false, rest: input };
+      return {
+        success: false,
+        rest: input,
+        position: position,
+        error: `Invalid tag name. Did not match regex: ${regex}`,
+      };
     }
   };
 

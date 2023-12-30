@@ -6,6 +6,7 @@ import {
   stringParser,
   whitespaceParser,
 } from './compiler/parsers';
+import { tagPairParser } from './compiler/pgn-tag-compiler';
 
 // tag pairs
 
@@ -23,7 +24,7 @@ const tag = sequence([
   endofLineParser(),
 ]);
 
-const pgn = `[Event "F/S Return Match"]
+const pgn = `[ Event "F/S Return Match"]
 [Site "Belgrade, Serbia JUG"]
 [Date "1992.11.04"]
 [Round "29"]
@@ -41,34 +42,6 @@ hxg5 29. b3 Ke6 30. a3 Kd6 31. axb4 cxb4 32. Ra5 Nd5 33. f3 Bc8 34. Kf2 Bf5
 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
 `;
 
-function removeEmptyRows(inputString: string): string {
-  // Split the string into an array of lines
-  const lines = inputString.split('\n');
+const p = tagPairParser(pgn);
 
-  // Filter out empty lines
-  const filteredLines = lines.filter((line) => line.trim() !== '');
-
-  // Join the array back into a string
-  return filteredLines.join('\n') + '\n';
-}
-function removeEndOfRows(inputString: string): string {
-  // Split the string into an array of lines
-  const lines = inputString.split('\n');
-
-  // Join the array back into a string
-  return lines.join(' ') + '\n';
-}
-
-const newPgn = removeEmptyRows(pgn);
-
-const oneOrMoreTags = oneOrMore(tag)(newPgn);
-
-console.log(oneOrMoreTags);
-
-// process tags
-
-// process moves
-
-// const moves = removeEndOfRows(oneOrMoreTags.rest);
-
-// console.log(moves);
+console.log(p);

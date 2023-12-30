@@ -2,15 +2,17 @@ export type ParserResult<T> = {
   success: boolean;
   value?: T;
   rest: string;
+  error?: string;
+  position?: number;
 };
 
-export type Parser<T> = (input: string) => ParserResult<T>;
+export type Parser<T> = (input: string, position?: number) => ParserResult<T>;
 
 export type Tag = {
   name: string;
 };
 
-export type Png = {
+export type TagPairs = {
   // mandatory tags
 
   // Event: name of the tournament or match event

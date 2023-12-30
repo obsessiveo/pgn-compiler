@@ -1,21 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const combinators_1 = require("./combinators");
-const parsers_1 = require("./parsers");
+const combinators_1 = require("./compiler/combinators");
+const parsers_1 = require("./compiler/parsers");
+const pgn_tag_compiler_1 = require("./compiler/pgn-tag-compiler");
 // tag pairs
 const openTag = (0, parsers_1.characterParser)('[');
-const tagName = (0, parsers_1.regexParser)(/^[a-zA-Z]+/);
+const tagName = (0, parsers_1.regexParser)(/^[a-zA-Z0-9_]+/);
 const tagValue = (0, parsers_1.stringParser)();
 const closeTag = (0, parsers_1.characterParser)(']');
 const tag = (0, combinators_1.sequence)([
     (0, combinators_1.ignore)(openTag),
     tagName,
-    (0, combinators_1.optional)((0, parsers_1.whitespaceParser)()),
+    (0, combinators_1.ignore)((0, combinators_1.optional)((0, parsers_1.whitespaceParser)())),
     tagValue,
     (0, combinators_1.ignore)(closeTag),
     (0, parsers_1.endofLineParser)(),
 ]);
-const pgn = `[Event "F/S Return Match"]
+const pgn = `[ Event "F/S Return Match"]
 [Site "Belgrade, Serbia JUG"]
 [Date "1992.11.04"]
 [Round "29"]
@@ -32,24 +33,5 @@ hxg5 29. b3 Ke6 30. a3 Kd6 31. axb4 cxb4 32. Ra5 Nd5 33. f3 Bc8 34. Kf2 Bf5
 35. Ra7 g6 36. Ra6+ Kc5 37. Ke1 Nf4 38. g3 Nxh3 39. Kd2 Kb5 40. Rd6 Kc5 41. Ra6
 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
 `;
-function removeEmptyRows(inputString) {
-    // Split the string into an array of lines
-    const lines = inputString.split('\n');
-    // Filter out empty lines
-    const filteredLines = lines.filter((line) => line.trim() !== '');
-    // Join the array back into a string
-    return filteredLines.join('\n') + '\n';
-}
-function removeEndOfRows(inputString) {
-    // Split the string into an array of lines
-    const lines = inputString.split('\n');
-    // Join the array back into a string
-    return lines.join(' ') + '\n';
-}
-const newPgn = removeEmptyRows(pgn);
-const oneOrMoreTags = (0, combinators_1.oneOrMore)(tag)(newPgn);
-console.log(oneOrMoreTags);
-// process tags
-// process moves
-// const moves = removeEndOfRows(oneOrMoreTags.rest);
-// console.log(moves);
+const p = (0, pgn_tag_compiler_1.tagPairParser)(pgn);
+console.log(p);

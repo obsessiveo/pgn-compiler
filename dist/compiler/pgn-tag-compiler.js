@@ -31,3 +31,4 @@ const tagParser = (0, combinators_1.sequence)([
 // this should compile a list of tag pairs
 // to be then converted to the type TagPairs
 exports.tagPairParser = (0, combinators_1.oneOrMore)(tagParser);
+//# sourceMappingURL=pgn-tag-compiler.js.map

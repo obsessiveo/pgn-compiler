@@ -1,19 +1,23 @@
+import { debug } from '../debug';
 import { Parser, ParserResult } from '../types-consts/types';
 
 export function sequence<T>(parsers: Parser<T>[]): Parser<T[]> {
   const f = (input: string, position = 0): ParserResult<T[]> => {
     let currentInput = input;
     let currentPosition = position;
+    let retVal: ParserResult<T[]>;
     const values: T[] = [];
     for (const parser of parsers) {
       const result = parser(currentInput, currentPosition);
       if (!result.success) {
-        return {
+        retVal = {
           success: false,
           rest: input,
           position: currentPosition,
           error: result.error,
         };
+        debug('sequence', retVal);
+        return retVal;
       }
       if (result.value) {
         values.push(result.value as T);
@@ -23,12 +27,14 @@ export function sequence<T>(parsers: Parser<T>[]): Parser<T[]> {
       currentPosition = result.position || currentPosition;
     }
 
-    return {
+    retVal = {
       success: true,
       value: values,
       rest: currentInput,
       position: currentPosition,
     };
+    debug('sequence', retVal);
+    return retVal;
   };
 
   return f;
@@ -37,34 +43,52 @@ export function sequence<T>(parsers: Parser<T>[]): Parser<T[]> {
 export function optional<T>(parser: Parser<T>): Parser<T | null> {
   return (input: string, position = 0): ParserResult<T | null> => {
     const result = parser(input, position);
+    let retVal: ParserResult<T | null>;
     if (result.success) {
-      return result;
+      retVal = {
+        success: true,
+        value: result.value,
+        rest: result.rest,
+        position: result.position,
+      };
     } else {
-      return {
+      retVal = {
         success: true,
         value: null,
         rest: input,
         position: position,
       };
     }
+    debug('optional', retVal);
+    return retVal;
   };
 }
 
 export function oneOf<T>(parsers: Parser<T>[]): Parser<T> {
   const f = (input: string, position = 0): ParserResult<T> => {
+    let retVal: ParserResult<T>;
     for (const parser of parsers) {
       const result = parser(input, position);
       if (result.success) {
-        return result;
+        retVal = {
+          success: true,
+          value: result.value,
+          rest: result.rest,
+          position: result.position,
+        };
+        debug('oneOf', retVal);
+        return retVal;
       }
     }
 
-    return {
+    retVal = {
       success: false,
       rest: input,
       position: position,
       error: 'Expected one of the parsers to succeed',
     };
+    debug('oneOf', retVal);
+    return retVal;
   };
 
   return f;
@@ -73,43 +97,49 @@ export function oneOf<T>(parsers: Parser<T>[]): Parser<T> {
 export function lookahead<T>(parser: Parser<T>): Parser<T> {
   return (input: string, position = 0): ParserResult<T> => {
     const result = parser(input, position);
+    let retVal: ParserResult<T>;
     if (result.success) {
-      return {
+      retVal = {
         success: true,
         value: result.value,
         rest: input,
         position: result.position,
       };
     } else {
-      return {
+      retVal = {
         success: false,
         rest: input,
         position: position,
         error: 'Lookahead failed',
       };
     }
+    debug('lookahead', retVal);
+    return retVal;
   };
 }
 
 export function ignore<T>(parser: Parser<T>): Parser<null> {
   return (input: string, position = 0): ParserResult<null> => {
     const result = parser(input, position);
+    let retVal: ParserResult<null>;
     if (result.success) {
       // Ignore the value and return null instead, but consume the input
-      return {
+      retVal = {
         success: true,
         value: null,
         rest: result.rest,
         position: result.position,
       };
     } else {
-      return {
+      retVal = {
         success: false,
         rest: input,
         error: result.error,
         position: position,
       };
     }
+    debug('ignore', retVal);
+    return retVal;
   };
 }
 
@@ -119,6 +149,7 @@ export function oneOrMore<T>(parser: Parser<T>): Parser<T[]> {
     let currentPosition = position;
     let currentError = '';
     const values: T[] = [];
+    let retVal: ParserResult<T[]>;
     while (true) {
       const result = parser(currentInput, currentPosition);
       currentPosition = result.position || currentPosition;
@@ -133,20 +164,22 @@ export function oneOrMore<T>(parser: Parser<T>): Parser<T[]> {
     }
 
     if (values.length > 0) {
-      return {
+      retVal = {
         success: true,
         value: values,
         rest: currentInput,
         position: currentPosition,
       };
     } else {
-      return {
+      retVal = {
         success: false,
         rest: input,
         position: position,
         error: currentError,
       };
     }
+    debug('oneOrMore', retVal);
+    return retVal;
   };
 
   return f;
@@ -157,6 +190,7 @@ export function zeroOrMore<T>(parser: Parser<T>): Parser<T[]> {
     let currentInput = input;
     let currentPosition = position;
     const values: T[] = [];
+    let retVal: ParserResult<T[]>;
     while (true) {
       const result = parser(currentInput, currentPosition);
       if (!result.success) {
@@ -170,12 +204,14 @@ export function zeroOrMore<T>(parser: Parser<T>): Parser<T[]> {
       currentInput = result.rest;
     }
 
-    return {
+    retVal = {
       success: true,
       value: values,
       rest: currentInput,
       position: currentPosition,
     };
+    debug('zeroOrMore', retVal);
+    return retVal;
   };
 
   return f;
@@ -190,20 +226,23 @@ export function zeroOrMore<T>(parser: Parser<T>): Parser<T[]> {
 export function mapCombinator<T, U>(parser: Parser<T>, transform: (value: T) => U): Parser<U> {
   return (input: string, position = 0): ParserResult<U> => {
     const result = parser(input, position);
+    let retVal: ParserResult<U>;
     if (result.success) {
-      return {
+      retVal = {
         success: true,
         value: transform(result.value as T),
         rest: result.rest,
         position: result.position,
       };
     } else {
-      return {
+      retVal = {
         success: false,
         rest: input,
         error: result.error,
         position: position,
       };
     }
+    debug('mapCombinator', retVal);
+    return retVal;
   };
 }

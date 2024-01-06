@@ -1,4 +1,4 @@
-import { ignore, oneOrMore, optional, sequence, zeroOrMore } from './compiler/combinators';
+import { ignore, optional, sequence } from './compiler/combinators';
 import {
   characterParser,
   endofLineParser,
@@ -6,7 +6,14 @@ import {
   stringParser,
   whitespaceParser,
 } from './compiler/parsers';
-import { tagPairParser } from './compiler/pgn-tag-compiler';
+import {
+  castlingParser,
+  kqbnrParser,
+  moveParser,
+  pieceMoveParser,
+  pieceParser,
+} from './compiler/pgn-moves.compiler';
+import { debugIndex, debugLog, resetDebug } from './debug';
 
 // tag pairs
 
@@ -42,6 +49,9 @@ hxg5 29. b3 Ke6 30. a3 Kd6 31. axb4 cxb4 32. Ra5 Nd5 33. f3 Bc8 34. Kf2 Bf5
 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
 `;
 
-const p = tagPairParser(pgn);
+// console.log(regexParser(/^0-0-0|0-0/)('0-0'));
 
-console.log(p);
+resetDebug();
+const res = moveParser('Bxf7+');
+console.log('moveParser: ', res.success, JSON.stringify(res.value));
+console.log(debugLog);

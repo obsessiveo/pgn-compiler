@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const combinators_1 = require("./compiler/combinators");
 const parsers_1 = require("./compiler/parsers");
-const pgn_tag_compiler_1 = require("./compiler/pgn-tag-compiler");
+const pgn_moves_compiler_1 = require("./compiler/pgn-moves.compiler");
+const debug_1 = require("./debug");
 // tag pairs
 const openTag = (0, parsers_1.characterParser)('[');
 const tagName = (0, parsers_1.regexParser)(/^[a-zA-Z0-9_]+/);
@@ -33,5 +34,9 @@ hxg5 29. b3 Ke6 30. a3 Kd6 31. axb4 cxb4 32. Ra5 Nd5 33. f3 Bc8 34. Kf2 Bf5
 35. Ra7 g6 36. Ra6+ Kc5 37. Ke1 Nf4 38. g3 Nxh3 39. Kd2 Kb5 40. Rd6 Kc5 41. Ra6
 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
 `;
-const p = (0, pgn_tag_compiler_1.tagPairParser)(pgn);
-console.log(p);
+// console.log(regexParser(/^0-0-0|0-0/)('0-0'));
+(0, debug_1.resetDebug)();
+const res = (0, pgn_moves_compiler_1.moveParser)('Bxf7+');
+console.log('moveParser: ', res.success, JSON.stringify(res.value));
+console.log(debug_1.debugLog);
+//# sourceMappingURL=index.js.map

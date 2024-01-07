@@ -1,6 +1,5 @@
 // PGN moves compiler
 
-import { ParserResult } from '../types-consts/types';
 import { lookahead, mapCombinator, oneOf, optional, sequence } from './combinators';
 import { regexParser } from './parsers';
 
